@@ -4,15 +4,15 @@ TNEX Survey Auto-Fill Tool — Web UI version
 Run: python3 app.py  →  opens http://127.0.0.1:5000 in browser
 """
 
-import threading
-import queue
-import time
 import json
+import queue
+import threading
+import time
 import webbrowser
 from datetime import datetime
 
 import openpyxl
-from flask import Flask, render_template_string, jsonify, request
+from flask import Flask, jsonify, render_template_string, request
 from playwright.sync_api import sync_playwright
 
 # ── Config ───────────────────────────────────────────────────────────────────
@@ -21,7 +21,7 @@ FORM_URL = (
     "https://forms.cloud.microsoft/Pages/ResponsePage.aspx"
     "?id=8tFN8x3T6E2GNbA2DFkW-SAWx3QxpEVKooBtoV3baItUQUgxSTlZWkhLRU5DVlpRN0xSWDQ0UjdDSC4u"
 )
-EXCEL_PATH = "/Users/tuannguyen/Downloads/40_unique_long_responses_soft_q4.xlsx"
+EXCEL_PATH = "40_unique_long_responses_soft_q4.xlsx"
 
 app = Flask(__name__)
 log_queue: queue.Queue = queue.Queue()
@@ -30,14 +30,17 @@ state = {"running": False, "done": 0, "total": 0, "success": 0, "fail": 0}
 
 # ── Excel ─────────────────────────────────────────────────────────────────────
 
+
 def load_data():
     wb = openpyxl.load_workbook(EXCEL_PATH)
     ws = wb.active
     return [list(r) for r in ws.iter_rows(min_row=2, values_only=True)]
 
+
 DATA = load_data()
 
 # ── Form automation ──────────────────────────────────────────────────────────
+
 
 def fill_single_form(page, row_data, row_num: int) -> bool:
     try:
@@ -75,7 +78,7 @@ def fill_single_form(page, row_data, row_num: int) -> bool:
             if ta and text:
                 ta.click()
                 ta.fill(text)
-                log_queue.put(f"[Hàng {row_num}] Q{q_idx+1} ✓  {len(text)} ký tự")
+                log_queue.put(f"[Hàng {row_num}] Q{q_idx + 1} ✓  {len(text)} ký tự")
                 page.wait_for_timeout(300)
 
         # Submit
@@ -103,7 +106,9 @@ def run_automation(indices: list, delay: int, show_browser: bool):
             for done, idx in enumerate(indices):
                 if stop_event.is_set():
                     break
-                log_queue.put(f"── Hàng {idx+1}  ({done+1}/{len(indices)}) ────────────────")
+                log_queue.put(
+                    f"── Hàng {idx + 1}  ({done + 1}/{len(indices)}) ────────────────"
+                )
                 ok = fill_single_form(page, DATA[idx], idx + 1)
                 state["success"] += ok
                 state["fail"] += not ok
@@ -124,15 +129,19 @@ def run_automation(indices: list, delay: int, show_browser: bool):
         log_queue.put(f"━━━ Hoàn thành: ✅ {s} thành công  ❌ {f} thất bại ━━━")
         state["running"] = False
 
+
 # ── Flask routes ──────────────────────────────────────────────────────────────
+
 
 @app.route("/")
 def index():
     rows = []
     for i, r in enumerate(DATA):
+
         def trunc(v, n=50):
             s = str(v) if v else ""
             return s[:n] + "…" if len(s) > n else s
+
         rows.append({"index": i, "cols": [trunc(r[j]) for j in range(6)]})
     return render_template_string(HTML_TEMPLATE, rows=rows, total=len(DATA))
 
