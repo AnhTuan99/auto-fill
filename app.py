@@ -5,6 +5,7 @@ Run: python3 app.py  →  opens http://127.0.0.1:5000 in browser
 """
 
 import json
+import os
 import queue
 import threading
 import time
@@ -438,9 +439,6 @@ function startPolling() {
 """
 
 # ── Main ──────────────────────────────────────────────────────────────────────
-
 if __name__ == "__main__":
-    url = "http://127.0.0.1:5000"
-    threading.Timer(1.0, lambda: webbrowser.open(url)).start()
-    print(f"✅ Mở trình duyệt tại {url}")
-    app.run(port=5000, debug=False, use_reloader=False)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=False)
