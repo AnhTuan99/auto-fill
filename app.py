@@ -16,6 +16,7 @@ import openpyxl
 from flask import Flask, jsonify, render_template_string, request
 from playwright.sync_api import sync_playwright
 
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/opt/render/.cache/ms-playwright"
 # ── Config ───────────────────────────────────────────────────────────────────
 
 FORM_URL = (
@@ -101,7 +102,10 @@ def run_automation(indices: list, delay: int, show_browser: bool):
     state.update(running=True, done=0, total=len(indices), success=0, fail=0)
     try:
         with sync_playwright() as pw:
-            browser = pw.chromium.launch(headless=not show_browser)
+            browser = pw.chromium.launch(
+                headless=not show_browser,
+                args=["--no-sandbox", "--disable-dev-shm-usage"],
+            )
             page = browser.new_context().new_page()
 
             for done, idx in enumerate(indices):
