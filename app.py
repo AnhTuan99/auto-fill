@@ -16,7 +16,7 @@ import openpyxl
 from flask import Flask, jsonify, render_template_string, request
 from playwright.sync_api import sync_playwright
 
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/opt/render/.cache/ms-playwright"
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "0"
 # ── Config ───────────────────────────────────────────────────────────────────
 
 FORM_URL = (
