@@ -103,7 +103,7 @@ def run_automation(indices: list, delay: int, show_browser: bool):
     try:
         with sync_playwright() as pw:
             browser = pw.chromium.launch(
-                headless=not show_browser,
+                headless=True,
                 args=["--no-sandbox", "--disable-dev-shm-usage"],
             )
             page = browser.new_context().new_page()
